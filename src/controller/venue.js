@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
 import Venue from '../model/venue';
+import Review from '../model/review';
 
 export default({ config, db }) => {
 	let api = Router();
@@ -9,6 +10,8 @@ export default({ config, db }) => {
 	api.post('/add', (req, res) => {
 		let newVenue = new Venue();
 		newVenue.name = req.body.name;
+		newVenue.venuetype = req.body.venuetype;
+		newVenue.geometry.coordinates = req.body.geometry.coordinates;
 
 		newVenue.save(err => {
 			if (err) {
@@ -88,6 +91,17 @@ export default({ config, db }) => {
 					res.json({ message: 'Venue review saved' });
 				});
 			});
+		});
+	});
+
+	// get reviews for specific venue id
+	// '/v1/venue/reviews/:id'
+	api.get('/reviews/:id', (req, res) => {
+		Review.find({venue: req.params.id}, (err, reviews) => {
+			if (err) {
+				res.send(err);
+			}
+			res.json(reviews);
 		});
 	});
 

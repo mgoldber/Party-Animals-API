@@ -3,11 +3,13 @@ import { Router } from 'express';
 import Venue from '../model/venue';
 import Review from '../model/review';
 
+import { authenticate } from '../middleware/authMiddleware';
+
 export default({ config, db }) => {
 	let api = Router();
 
 	// '/v1/venue/add'
-	api.post('/add', (req, res) => {
+	api.post('/add', authenticate, (req, res) => {
 		let newVenue = new Venue();
 		newVenue.name = req.body.name;
 		newVenue.venuetype = req.body.venuetype;
@@ -106,4 +108,4 @@ export default({ config, db }) => {
 	});
 
 	return api;
-} 
+}

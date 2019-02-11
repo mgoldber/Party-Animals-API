@@ -8,7 +8,10 @@ const LocalStrategy = require('passport-local').Strategy;
 import config from './config';
 import routes from './routes';
 
+var cors = require('cors');
+
 let app = express();
+app.use(cors())
 app.server = http.createServer(app);
 
 // middleware

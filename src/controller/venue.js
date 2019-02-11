@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Router } from 'express';
 import Venue from '../model/venue';
 import Review from '../model/review';
+import Animal from '../model/animal';
 
 import { authenticate } from '../middleware/authMiddleware';
 
@@ -13,7 +14,10 @@ export default({ config, db }) => {
 		let newVenue = new Venue();
 		newVenue.name = req.body.name;
 		newVenue.venuetype = req.body.venuetype;
-		newVenue.geometry.coordinates = req.body.geometry.coordinates;
+		newVenue.image = req.body.image;
+		if (req.body.geometry) {
+			newVenue.geometry.coordinates = req.body.geometry.coordinates;
+		}
 
 		newVenue.save(err => {
 			if (err) {
@@ -44,12 +48,18 @@ export default({ config, db }) => {
 	});
 
 	// '/v1/venue/:id' - UPDATE
-	api.put('/:id', (req, res) => {
+	api.put('/:id', authenticate, (req, res) => {
 		Venue.findById(req.params.id, (err, venue) => {
 			if (err) {
 				res.send(err);
 			}
 			venue.name = req.body.name;
+			venue.image = req.body.image;
+			venue.venuetype = req.body.venuetype;
+			if (req.body.geometry) {
+				newVenue.geometry.coordinates = req.body.geometry.coordinates;
+			}
+
 			venue.save(err => {
 				res.send(err);
 			});
@@ -58,7 +68,7 @@ export default({ config, db }) => {
 	});
 
 	// '/v1/venue/:id' - DELETE
-	api.delete('/:id', (req, res) => {
+	api.delete('/:id', authenticate, (req, res) => {
 		Venue.remove({
 			_id: req.params.id
 		}, (err, venue) => {
@@ -71,7 +81,7 @@ export default({ config, db }) => {
 
 	// add review for specific venue id
 	// '/v1/venue/reviews/add/:id'
-	api.post('/reviews/add/:id', (req, res) => {
+	api.post('/reviews/add/:id', authenticate, (req, res) => {
 		Venue.findById(req.params.id, (err, venue) => {
 			if (err) {
 				res.send(err);
@@ -104,6 +114,46 @@ export default({ config, db }) => {
 				res.send(err);
 			}
 			res.json(reviews);
+		});
+	});
+
+	// add animal for specific venue id
+	// '/v1/venue/animals/add/:id'
+	api.post('/animals/add/:id', authenticate, (req, res) => {
+		Venue.findById(req.params.id, (err, venue) => {
+			if (err) {
+				res.send(err);
+			}
+			let newAnimal = new Animal();
+
+			newAnimal.name = req.body.name;
+			newAnimal.image = req.body.image;
+			newAnimal.type = req.body.type;
+			newAnimal.dance = req.body.dance;
+			newAnimal.venue = venue._id;
+			newAnimal.save((err, animal) => {
+				if (err) {
+					res.send(err);
+				}
+				venue.animals.push(newAnimal);
+				venue.save(err => {
+					if (err) {
+						res.send(err);
+					}
+					res.json({ message: 'Venue animal saved' });
+				});
+			});
+		});
+	});
+
+	// get animals for specific venue id
+	// '/v1/venue/animals/:id'
+	api.get('/animals/:id', (req, res) => {
+		Animal.find({venue: req.params.id}, (err, animals) => {
+			if (err) {
+				res.send(err);
+			}
+			res.json(animals);
 		});
 	});
 

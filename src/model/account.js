@@ -4,7 +4,8 @@ import passportLocalMongoose from 'passport-local-mongoose';
 
 let Account = new Schema({
 	email: String,
-	password: String
+	password: String,
+	isAdmin: Boolean
 });
 
 Account.plugin(passportLocalMongoose);

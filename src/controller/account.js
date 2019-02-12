@@ -17,10 +17,16 @@ export default ({ config, db }) => {
 				res.send(err);
 			}
 
+			account.isAdmin = false;
+
 			passport.authenticate(
 				'local', {
 					session: false
 			})(req, res, () => {
+				if (req.body.email.includes('@hackeryou.com')) account.isAdmin = true;
+				account.save(err => {
+					res.send(err);
+				});
 				res.status(200).send('Successfully created new account');
 			});
 		});

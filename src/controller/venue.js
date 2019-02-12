@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
 import Venue from '../model/venue';
+import Account from '../model/account';
 import Review from '../model/review';
 import Animal from '../model/animal';
 
@@ -18,12 +19,17 @@ export default({ config, db }) => {
 		if (req.body.geometry) {
 			newVenue.geometry.coordinates = req.body.geometry.coordinates;
 		}
-
-		newVenue.save(err => {
-			if (err) {
-				res.send(err);
+		Account.findById(req.user.id, (err, user) => {
+			if (user.isAdmin) {
+				newVenue.save(err => {
+					if (err) {
+						res.send(err);
+					}
+					res.json({ message: 'Venue saved successfully' });
+				});
+			} else {
+				res.json({ message: 'User is not administrator' });
 			}
-			res.json({ message: 'Venue saved successfully' });
 		});
 	});
 
@@ -131,17 +137,24 @@ export default({ config, db }) => {
 			newAnimal.type = req.body.type;
 			newAnimal.dance = req.body.dance;
 			newAnimal.venue = venue._id;
-			newAnimal.save((err, animal) => {
-				if (err) {
-					res.send(err);
+
+			Account.findById(req.user.id, (err, user) => {
+				if (user.isAdmin) {
+					newAnimal.save((err, animal) => {
+						if (err) {
+							res.send(err);
+						}
+						venue.animals.push(newAnimal);
+						venue.save(err => {
+							if (err) {
+								res.send(err);
+							}
+							res.json({ message: 'Venue animal saved' });
+						});
+					});
+				} else {
+					res.json({ message: 'User is not administrator' });
 				}
-				venue.animals.push(newAnimal);
-				venue.save(err => {
-					if (err) {
-						res.send(err);
-					}
-					res.json({ message: 'Venue animal saved' });
-				});
 			});
 		});
 	});

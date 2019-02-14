@@ -5,7 +5,7 @@ import passportLocalMongoose from 'passport-local-mongoose';
 let Account = new Schema({
 	email: String,
 	password: String,
-	isAdmin: Boolean
+	isVerified: { type: Boolean, default: false }
 });
 
 Account.plugin(passportLocalMongoose);

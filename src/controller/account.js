@@ -1,8 +1,11 @@
 import mongoose from 'mongoose';
 import { Router } from 'express';
 import Account from '../model/account';
+import Token from '../model/token';
 import bodyParser from 'body-parser';
 import passport from 'passport';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 import config from '../config';
 
 import { generateAccessToken, respond, authenticate } from '../middleware/authMiddleware';
@@ -17,17 +20,33 @@ export default ({ config, db }) => {
 				res.send(err);
 			}
 
-			account.isAdmin = false;
-
 			passport.authenticate(
 				'local', {
 					session: false
 			})(req, res, () => {
-				if (req.body.email.includes('@hackeryou.com')) account.isAdmin = true;
 				account.save(err => {
 					res.send(err);
 				});
-				res.status(200).send('Successfully created new account');
+
+				// SENDGRID EMAIL VALIDATION
+				const sgMail = require('@sendgrid/mail');
+				sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+				let token = new Token({_userId: account._id, token: crypto.randomBytes(16).toString('hex')});
+
+				token.save(function (err) {
+					if (err) { return res.status(500).send({ msg: err.message }); }
+					const msg = {
+						to: 'mark@hackeryou.com',
+						from: 'mark@hackeryou.com',
+						subject: 'Account verification token',
+						text: 'Hello,\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/v1\/account\/confirmation\/' + token.token + '.\n'
+					};
+
+					sgMail.send(msg);
+				});
+
+				// res.status(200).send('Successfully created new account');
 			});
 		});
 	});
@@ -38,6 +57,27 @@ export default ({ config, db }) => {
 			session: false,
 			scope: []
 		}), generateAccessToken, respond);
+
+
+	// Token generation routes for email authentication
+	// '/v1/account/confirmation'
+	api.get('/confirmation/:id', (req, res, next) => {
+		Token.findOne({ token: req.params.id }, function (err, token) {
+			if (!token) return res.status(400).send({ type: 'not-verified', msg: 'We were unable to find a valid token. Your token may have expired.' });
+			// If we found a token, find a matching user
+			Account.findOne({ _id: token._userId, email: req.body.email }, function (err, user) {
+				if (!user) return res.status(400).send({ msg: 'We were unable to find a user for this token' });
+				if (user.isVerified) return res.status(400).send({ type: 'already-verified', msg: 'This user has already been verified.' });
+
+				// Verify and save the user with the updated verification status
+				user.isVerified = true;
+				user.save(function(err) {
+					if (err) { return res.status(500).send({ msg: err.message }); }
+					res.status(200).send("The account has been verified. Please log in.");
+				});
+			});
+		});
+	});
 
 	// '/v1/account/logout'
 	api.get('/logout', authenticate, (req, res) => {

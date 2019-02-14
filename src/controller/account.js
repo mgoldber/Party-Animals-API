@@ -8,6 +8,8 @@ import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import config from '../config';
 
+const path = require('path');
+
 import { generateAccessToken, respond, authenticate } from '../middleware/authMiddleware';
 
 export default ({ config, db }) => {
@@ -25,6 +27,7 @@ export default ({ config, db }) => {
 					session: false
 			})(req, res, () => {
 				account.save(err => {
+					if (err) { return res.status(500).send({ msg: err.message }); }
 					res.send(err);
 				});
 
@@ -40,7 +43,15 @@ export default ({ config, db }) => {
 						to: 'mark@hackeryou.com',
 						from: 'mark@hackeryou.com',
 						subject: 'Account verification token',
-						text: 'Hello,\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/v1\/account\/confirmation\/' + token.token + '.\n'
+						html:
+						'<div style=\"width: 100%;\">' +
+						'<h1 style=\"text-align:center;\">Hi Friend!</h1>' +
+						'<h4 style=\"text-align:center;\">Get ready to join the party with the Party Animals API</h4>' +
+						'<p style=\"text-align:center\">Click the following link to finalize verification:</p>' +
+						'<div style=\"text-align:center;\">' +
+							`<a style=\"text-decoration:none; padding: 10px 10px; border-radius: 10px;\" href=\"http:\/\/${req.headers.host}\/v1\/account\/confirmation\/${token.token}\">To the party!</a>` +
+						'</div>' +
+						'</div>'
 					};
 
 					sgMail.send(msg);
@@ -71,9 +82,13 @@ export default ({ config, db }) => {
 
 				// Verify and save the user with the updated verification status
 				user.isVerified = true;
+				// At this point the email validation has been clicked so can confirm email extension
+				if (user.username.includes('@hackeryou.com')) user.isAdmin = true;
+
 				user.save(function(err) {
 					if (err) { return res.status(500).send({ msg: err.message }); }
-					res.status(200).send("The account has been verified. Please log in.");
+					// res.status(200).send("The account has been verified. Please log in.");
+					res.status(200).sendFile(path.join(__dirname+'../..'+'/successRegister.html'));
 				});
 			});
 		});

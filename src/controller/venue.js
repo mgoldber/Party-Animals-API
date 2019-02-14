@@ -66,22 +66,34 @@ export default({ config, db }) => {
 				newVenue.geometry.coordinates = req.body.geometry.coordinates;
 			}
 
-			venue.save(err => {
-				res.send(err);
+			Account.findById(req.user.id, (err, user) => {
+				if (user.isAdmin) {
+					venue.save(err => {
+						res.send(err);
+					});
+					res.json({ message: 'Venue info updated' });
+				} else {
+					res.json({ message: 'User is not administrator' });
+				}
 			});
-			res.json({ message: "Venue info updated" });
 		});
 	});
 
 	// '/v1/venue/:id' - DELETE
 	api.delete('/:id', authenticate, (req, res) => {
-		Venue.remove({
-			_id: req.params.id
-		}, (err, venue) => {
-			if (err) {
-				res.send(err);
+		Account.findById(req.user.id, (err, user) => {
+			if (user.isAdmin) {
+				Venue.remove({
+					_id: req.params.id
+				}, (err, venue) => {
+					if (err) {
+						res.send(err);
+					}
+					res.json({ message: "Venue successfully removed" });
+				});
+			} else {
+				res.json({ message: 'User is not administrator' });
 			}
-			res.json({ message: "Venue successfully removed" });
 		});
 	});
 
@@ -97,17 +109,24 @@ export default({ config, db }) => {
 			newReview.title = req.body.title;
 			newReview.text = req.body.text;
 			newReview.venue = venue._id;
-			newReview.save((err, review) => {
-				if (err) {
-					res.send(err);
+
+			Account.findById(req.user.id, (err, user) => {
+				if (user.isAdmin) {
+					newReview.save((err, review) => {
+						if (err) {
+							res.send(err);
+						}
+						venue.reviews.push(newReview);
+						venue.save(err => {
+							if (err) {
+								res.send(err);
+							}
+							res.json({ message: 'Venue review saved' });
+						});
+					});
+				} else {
+					res.json({ message: 'User is not administrator' });
 				}
-				venue.reviews.push(newReview);
-				venue.save(err => {
-					if (err) {
-						res.send(err);
-					}
-					res.json({ message: 'Venue review saved' });
-				});
 			});
 		});
 	});

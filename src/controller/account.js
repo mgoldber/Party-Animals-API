@@ -15,7 +15,7 @@ import { generateAccessToken, respond, authenticate } from '../middleware/authMi
 export default ({ config, db }) => {
 	let api = Router();
 
-	// '/v1/account'
+	// '/v1/account/register'
 	api.post('/register', (req, res) => {
 		Account.register(new Account({ username: req.body.email }), req.body.password, function(err, account) {
 			if (err) {

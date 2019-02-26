@@ -40,7 +40,7 @@ export default ({ config, db }) => {
 				token.save(function (err) {
 					if (err) { return res.status(500).send({ msg: err.message }); }
 					const msg = {
-						to: req.body.email,
+						to: account.username,
 						from: 'mark@hackeryou.com',
 						subject: 'Party Animals Account Verification Token',
 						html:

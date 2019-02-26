@@ -34,7 +34,7 @@ export default({ config, db }) => {
 	});
 
 	// '/v1/venue/' - READ all venues
-	api.get('/', (req, res) => {
+	api.get('/', authenticate, (req, res) => {
 		Venue.find({}, (err, venues) => {
 			if (err) {
 				res.send(err);
@@ -44,7 +44,7 @@ export default({ config, db }) => {
 	});
 
 	// '/v1/venue/:id' - READ one venue
-	api.get('/:id', (req, res) => {
+	api.get('/:id', authenticate, (req, res) => {
 		Venue.findById(req.params.id, (err, venue) => {
 			if (err) {
 				res.send(err);
@@ -133,7 +133,7 @@ export default({ config, db }) => {
 
 	// get reviews for specific venue id
 	// '/v1/venue/reviews/:id'
-	api.get('/reviews/:id', (req, res) => {
+	api.get('/reviews/:id', authenticate, (req, res) => {
 		Review.find({venue: req.params.id}, (err, reviews) => {
 			if (err) {
 				res.send(err);
@@ -180,7 +180,7 @@ export default({ config, db }) => {
 
 	// get animals for specific venue id
 	// '/v1/venue/animals/:id'
-	api.get('/animals/:id', (req, res) => {
+	api.get('/animals/:id', authenticate, (req, res) => {
 		Animal.find({venue: req.params.id}, (err, animals) => {
 			if (err) {
 				res.send(err);

@@ -40,16 +40,16 @@ export default ({ config, db }) => {
 				token.save(function (err) {
 					if (err) { return res.status(500).send({ msg: err.message }); }
 					const msg = {
-						to: 'mark@hackeryou.com',
+						to: req.body.email,
 						from: 'mark@hackeryou.com',
-						subject: 'Account verification token',
+						subject: 'Party Animals Account Verification Token',
 						html:
-						'<div style=\"width: 100%;\">' +
-						'<h1 style=\"text-align:center;\">Hi Friend!</h1>' +
+						'<div style=\"width: 100%;background-image:linear-gradient(#3D6417, #143307); color: white; line-height:2; font-family: arial;\">' +
+						'<h1 style=\"text-align:center;\">Hi Party Animal!</h1>' +
 						'<h4 style=\"text-align:center;\">Get ready to join the party with the Party Animals API</h4>' +
-						'<p style=\"text-align:center\">Click the following link to finalize verification:</p>' +
+						'<p style=\"text-align:center\">Click the following link to finish verification:</p>' +
 						'<div style=\"text-align:center;\">' +
-							`<a style=\"text-decoration:none; padding: 10px 10px; border-radius: 10px;\" href=\"http:\/\/${req.headers.host}\/v1\/account\/confirmation\/${token.token}\">To the party!</a>` +
+							`<a style=\"padding: 10px 10px; color: white;\" href=\"http:\/\/${req.headers.host}\/api\/v1\/account\/confirmation\/${token.token}\">TO THE PARTY!</a>` +
 						'</div>' +
 						'</div>'
 					};

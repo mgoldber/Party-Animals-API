@@ -16,6 +16,7 @@ export default({ config, db }) => {
 		newVenue.name = req.body.name;
 		newVenue.venuetype = req.body.venuetype;
 		newVenue.image = req.body.image;
+		newVenue.description = req.body.description;
 		if (req.body.geometry) {
 			newVenue.geometry.coordinates = req.body.geometry.coordinates;
 		}
@@ -62,6 +63,7 @@ export default({ config, db }) => {
 			venue.name = req.body.name;
 			venue.image = req.body.image;
 			venue.venuetype = req.body.venuetype;
+			venue.description = req.body.description;
 			if (req.body.geometry) {
 				newVenue.geometry.coordinates = req.body.geometry.coordinates;
 			}

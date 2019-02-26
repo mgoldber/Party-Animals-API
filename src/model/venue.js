@@ -16,6 +16,10 @@ let VenueSchema = new Schema({
 		type: String,
 		required: true
 	},
+	description: {
+		type: String,
+		required: true
+	},
 	geometry: {
 		type: { type: String, default: 'Point' },
 		coordinates: [Number]

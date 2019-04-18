@@ -6,7 +6,8 @@ let Account = new Schema({
 	email: String,
 	password: String,
 	isVerified: { type: Boolean, default: false },
-	isAdmin: { type: Boolean, default: false }
+	isAdmin: { type: Boolean, default: false },
+	resetPasswordToken: String
 });
 
 Account.plugin(passportLocalMongoose);

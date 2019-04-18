@@ -21,6 +21,8 @@ app.use(bodyParser.json({
 	limit: config.bodyLimit
 }));
 
+app.use(bodyParser.urlencoded({ extended: true }));
+
 // passport config
 app.use(passport.initialize());
 let Account = require('./model/account');
